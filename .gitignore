@@ -1,3 +1,14 @@
 # Local handoff documents for agents.
 md/
 
+# Firmware binaries (large; host on GitHub Releases, NOT in git)
+*.img
+*.img.gz
+*.img.xz
+sha256sums.txt
+# local build/scratch dirs
+build/
+release/
+out/
+# keep DTB sources (small) tracked: dtb/**/*.dtb and *.dts are NOT ignored
+
