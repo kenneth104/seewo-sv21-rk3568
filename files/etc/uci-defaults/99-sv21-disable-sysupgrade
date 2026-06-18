@@ -1,0 +1,50 @@
+#!/bin/sh
+
+set -eu
+
+REAL_DIR="/usr/libexec/sv21"
+REAL_SYSUPGRADE="$REAL_DIR/sysupgrade.real"
+GUARD="/sbin/sysupgrade"
+
+mkdir -p "$REAL_DIR"
+
+if [ ! -x "$REAL_SYSUPGRADE" ]; then
+	if [ -x /rom/sbin/sysupgrade ]; then
+		cp /rom/sbin/sysupgrade "$REAL_SYSUPGRADE"
+	elif [ -x /sbin/sysupgrade ]; then
+		cp /sbin/sysupgrade "$REAL_SYSUPGRADE"
+	fi
+	chmod 0755 "$REAL_SYSUPGRADE" 2>/dev/null || true
+fi
+
+cat > "$GUARD" <<'EOF'
+#!/bin/sh
+
+REAL_SYSUPGRADE="/usr/libexec/sv21/sysupgrade.real"
+ALLOW_FILE="/etc/sv21-allow-sysupgrade"
+
+if [ -f "$ALLOW_FILE" ] && [ -x "$REAL_SYSUPGRADE" ]; then
+	exec "$REAL_SYSUPGRADE" "$@"
+fi
+
+cat >&2 <<'MSG'
+SV21 firmware upgrade is disabled on this build.
+
+Reason:
+  sysupgrade rewrites the firmware image and may replace the validated SV21
+  device tree, which can bring back CPU/WAN/LAN problems.
+
+Package installation and normal software updates are not blocked.
+
+Maintainer override:
+  touch /etc/sv21-allow-sysupgrade
+  sysupgrade ...
+  rm -f /etc/sv21-allow-sysupgrade
+MSG
+
+exit 1
+EOF
+
+chmod 0755 "$GUARD"
+
+exit 0

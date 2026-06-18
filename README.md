@@ -16,6 +16,7 @@
 | CPU 锁频 | fan53555 `Chip ID 8 not supported`，锁 816MHz | `vdd_cpu` = `silergy,syr827` → **1.992GHz** |
 | LAN 口（GMAC1） | 板载/PoE 口链路不起 | 补 `fixed-link` |
 | WAN 口（RTL8153） | 内部 USB 千兆不枚举、无 eth1 | 设备树 USB 配置修正 → eth1 恢复 |
+| 防误升级 | 用户误点固件升级可能覆盖已验证设备树 | 默认拦截 `sysupgrade`，普通软件包安装/更新不受影响 |
 | NPU | 上游不支持 | 仍不可用（主线 Linux 不支持 RK3568 NPU） |
 
 ## 已验证 DTB
@@ -26,6 +27,7 @@
 ## ⚠️ 刷机须知
 
 - sysupgrade 会**整盘重写 eMMC**，原有 `/opt` 等数据分区会被抹除，刷前务必备份。
+- v2 起默认禁止用户通过 LuCI 或命令行执行固件升级，避免覆盖本机已验证的 SV21 设备树；这不影响 `opkg`、iStore 等普通软件包安装/更新。
 - 不要勾选“保留配置”；备好 MaskROM 救砖（loader：`rk356x_spl_loader_ddr1056_v1.12.109_no_check_todly.bin`）。
 - 依赖与刷机工具见 `depends-ubuntu-2004`、`RK3568刷机教程.docx`。
 
